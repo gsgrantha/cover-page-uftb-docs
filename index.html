@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Cover Page Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --theme-blue: #2A4B9B; 
+            --border-blue: #1e3a8a;
+            --pure-red: #ff0505; 
+            --electric-cyan: #00eaff; 
+            --dark-panel: #2c3e50;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif; 
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Controls (UI) --- */
+        .controls {
+            background: var(--dark-panel); 
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 850px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .controls h2 { 
+            grid-column: 1 / -1; 
+            margin: 0 0 10px 0; 
+            color: var(--pure-red); 
+            text-align: center; 
+            font-family: 'Arial Black', sans-serif; 
+            text-transform: uppercase;
+        }
+
+        .controls h3 {
+            grid-column: 1 / -1;
+            border-bottom: 2px solid var(--electric-cyan); 
+            padding-top: 10px; 
+            color: var(--electric-cyan);
+            font-family: sans-serif;
+        }
+        
+        .form-group label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 4px; 
+            color: var(--electric-cyan); 
+            font-size: 0.9em; 
+            font-family: sans-serif; 
+            text-transform: uppercase;
+        }
+
+        .form-group input { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #bbb; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+            background-color: #ffffff !important; 
+            color: #000000 !important;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+        
+        .btn-download {
+            grid-column: 1 / -1;
+            padding: 15px;
+            background-color: var(--electric-cyan);
+            color: #1a1a1a; 
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-download:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--electric-cyan); }
+
+        .ui-credit {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-family: sans-serif;
+            font-size: 0.85em;
+            color: #bbb;
+            border-top: 1px solid #444;
+            padding-top: 15px;
+            line-height: 1.4;
+            margin-top: 10px;
+        }
+
+        /* --- PDF Page Container --- */
+        #page-container {
+            width: 210mm;
+            height: 296.5mm; 
+            background: #fff;
+            padding: 10mm;
+            box-sizing: border-box;
+            position: relative;
+            page-break-inside: avoid;
+        }
+
+        .border-box {
+            width: 100%;
+            height: 100%;
+            border: 5px solid var(--border-blue); 
+            padding: 4px;
+            box-sizing: border-box;
+        }
+
+        .inner-border {
+            width: 100%;
+            height: 100%;
+            border: 1.5px solid var(--border-blue);
+            padding: 30px 45px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 25px; 
+            gap: 20px;
+        }
+
+        .logo-img { width: 100px; height: auto; flex-shrink: 0; }
+
+        .uni-name {
+            font-size: 22pt; 
+            font-weight: bold;
+            color: var(--theme-blue);
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1.2;
+            width: 460px; 
+            word-wrap: break-word;
+        }
+
+        .assignment-section {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 35px;
+        }
+
+        .main-title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: var(--theme-blue);
+            text-transform: uppercase;
+            text-decoration: underline;
+        }
+
+        /* FIXED: Improved Info Block for Multi-line text */
+        .info-block {
+            font-size: 15pt;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            width: 100%;
+        }
+
+        .info-row { 
+            display: block; /* Changed to block for natural wrapping */
+            text-align: center; 
+            width: 95%; 
+            line-height: 1.4;
+        }
+
+        .label-theme { color: var(--theme-blue); display: inline; }
+        .value-text { 
+            color: #000; 
+            text-transform: uppercase; 
+            display: inline;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .submitted-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 45px;
+        }
+
+        .box-header {
+            background-color: #000;
+            color: #fff;
+            font-size: 14pt;
+            font-weight: bold;
+            font-style: italic;
+            padding: 5px 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: 165px 25px auto;
+            font-size: 14pt;
+            font-weight: bold;
+            row-gap: 10px;
+            color: #000;
+        }
+
+        .teacher-info {
+            font-size: 14pt;
+            font-weight: bold;
+            line-height: 1.6;
+            color: #000;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 380px;
+            opacity: 0.07;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @media print {
+            .controls { display: none; }
+            #page-container { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2>Academic Cover Page Generator</h2>
+        
+        <div class="form-group full-width">
+            <label>Upload Logo</label>
+            <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload()">
+        </div>
+        <div class="form-group full-width">
+            <label>University Name</label>
+            <input type="text" id="i_uni" value="UNIVERSITY OF FRONTIER TECHNOLOGY, BANGLADESH" oninput="update()">
+        </div>
+        <div class="form-group full-width">
+            <label>Heading</label>
+            <input type="text" id="i_main_title" value="ASSIGNMENT" oninput="update()">
+        </div>
+        <div class="form-group">
+            <label>Course Code</label>
+            <input type="text" id="i_cc" value="CSE-113" oninput="update()">
+        </div>
+        
+        <div class="form-group">
+            <label>Submission Date</label>
+            <input type="date" id="i_date" value="2026-02-20" oninput="update()">
+        </div>
+
+        <div class="form-group full-width">
+            <label>Course Title</label>
+            <input type="text" id="i_ct" value="DATA STRUCTURES AND ALGORITHM" oninput="update()">
+        </div>
+        <div class="form-group full-width">
+            <label>Topic</label>
+            <input type="text" id="i_topic" value="GRAPH AND ALGORITHM" oninput="update()">
+        </div>
+
+        <h3 class="full-width">Submitted By</h3>
+        <div class="form-group"><label>Name</label><input id="i_sname" value="GRANTHA SAHA" oninput="update()"></div>
+        <div class="form-group"><label>ID</label><input id="i_sid" value="2305010" oninput="update()"></div>
+        <div class="form-group full-width"><label>Faculty</label><input id="i_sfac" value="SOFTWARE & MACHINE INTELLIGENCE ENGINEERING" oninput="update()"></div>
+        <div class="form-group full-width"><label>Department</label><input id="i_sdept" value="DATA SCIENCE AND ENGINEERING" oninput="update()"></div>
+        <div class="form-group"><label>Session</label><input id="i_sses" value="2023-2024" oninput="update()"></div>
+
+        <h3 class="full-width">Submitted To</h3>
+        <div class="form-group full-width"><label>Teacher Name</label><input id="i_tname" value="SHARAD HASAN" oninput="update()"></div>
+        <div class="form-group full-width"><label>Designation</label><input id="i_tdesig" value="LECTURER" oninput="update()"></div>
+        <div class="form-group full-width"><label>Teacher Department</label><input id="i_tdept" value="DEPARTMENT OF DATA SCIENCE AND ENGINEERING" oninput="update()"></div>
+
+        <button class="btn-download" onclick="genPDF()">GENERATE & DOWNLOAD PDF (1 PAGE)</button>
+
+        <div class="ui-credit">
+            <strong>Academic Cover Page Generator</strong><br>
+            Created By- <strong style="color: #ff0505;">GRANTHA SAHA</strong><br>
+            Data Science And Engineering<br>
+            University of Frontier Technology, Bangladesh
+        </div>
+    </div>
+
+    <div id="page-container">
+        <div class="border-box">
+            <div class="inner-border">
+                <img id="wm-img" class="watermark" src="" alt="">
+                <div class="content-layer">
+                    <div class="header">
+                        <img id="main-logo" class="logo-img" src="" alt="">
+                        <div class="uni-name" id="o_uni">UNIVERSITY OF FRONTIER TECHNOLOGY, BANGLADESH</div>
+                    </div>
+                    <div style="height: 30px;"></div> 
+                    <div class="assignment-section">
+                        <div class="main-title" id="o_main_title">ASSIGNMENT</div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-row"><span class="label-theme">COURSE CODE :</span> <span class="value-text" id="o_cc"></span></div>
+                        <div class="info-row"><span class="label-theme">DATE OF SUBMISSION :</span> <span class="value-text" id="o_date"></span></div>
+                        <div style="height: 10px;"></div>
+                        <div class="info-row"><span class="label-theme">COURSE TITLE :</span> <span class="value-text" id="o_ct"></span></div>
+                        <div style="height: 10px;"></div>
+                        <div class="info-row"><span class="label-theme">TOPIC :</span> <span class="value-text" id="o_topic"></span></div>
+                    </div>
+                    <div class="submitted-container">
+                        <div class="submitted-box">
+                            <div class="box-header">SUBMITTED BY:</div>
+                            <div class="student-grid">
+                                <div>NAME</div><div>:</div><div id="o_sname"></div>
+                                <div>FACULTY</div><div>:</div><div id="o_sfac"></div>
+                                <div>DEPARTMENT</div><div>:</div><div id="o_sdept"></div>
+                                <div>SESSION</div><div>:</div><div id="o_sses"></div>
+                                <div>STUDENT ID</div><div>:</div><div id="o_sid"></div>
+                            </div>
+                        </div>
+                        <div class="submitted-box">
+                            <div class="box-header">SUBMITTED TO:</div>
+                            <div class="teacher-info">
+                                <div id="o_tname"></div>
+                                <div id="o_tdesig"></div>
+                                <div id="o_tdept"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleLogoUpload() {
+            const input = document.getElementById('logoInput');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('main-logo').src = e.target.result;
+                    document.getElementById('wm-img').src = e.target.result;
+                    localStorage.setItem('user_logo_final', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function update() {
+            const fields = {
+                'i_uni': 'o_uni', 'i_main_title': 'o_main_title',
+                'i_cc': 'o_cc', 'i_date': 'o_date',
+                'i_ct': 'o_ct', 'i_topic': 'o_topic',
+                'i_sname': 'o_sname', 'i_sid': 'o_sid',
+                'i_sfac': 'o_sfac', 'i_sdept': 'o_sdept', 'i_sses': 'o_sses',
+                'i_tname': 'o_tname', 'i_tdesig': 'o_tdesig', 'i_tdept': 'o_tdept'
+            };
+            for(let inputId in fields) {
+                let val = document.getElementById(inputId).value;
+                
+                if (inputId === 'i_date' && val) {
+                    const parts = val.split('-');
+                    if (parts.length === 3) {
+                        val = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                }
+                
+                document.getElementById(fields[inputId]).textContent = val.toUpperCase();
+            }
+        }
+
+        function genPDF() {
+            const element = document.getElementById('page-container');
+            const studentID = document.getElementById('i_sid').value || "CoverPage";
+            const opt = {
+                margin: 0,
+                filename: `CoverPage_${studentID}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        window.onload = function() {
+            const savedLogo = localStorage.getItem('user_logo_final');
+            if(savedLogo) {
+                document.getElementById('main-logo').src = savedLogo;
+                document.getElementById('wm-img').src = savedLogo;
+            }
+            update();
+        };
+    </script>
+</body>
+</html>
